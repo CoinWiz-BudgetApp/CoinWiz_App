@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: '140%',
     height: 70,
-    backgroundColor: '#A855C1',
+    backgroundColor: '#ffcd62ff',
   },
   logoContainer: {
     marginTop: 150,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DDD',
     fontSize: 15,
-    color: '#1a1a1a',   // ✅ Visible text color
+    color: '#1a1a1a', 
   },
   forgotContainer: {
     width: '80%',
@@ -150,13 +150,13 @@ const styles = StyleSheet.create({
     marginTop: -6,
   },
   forgotText: {
-    color: '#A855C1',
+    color: '#ffcd62ff',
     fontSize: 13,
   },
   loginButton: {
     width: '50%',
     height: 48,
-    backgroundColor: '#A855C1',
+    backgroundColor: '#ffcd62ff',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',

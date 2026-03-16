@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   subGreeting: { fontSize: 13, color: '#888', marginTop: 2 },
 
   balanceCard: {
-    backgroundColor: '#A855C1',
+    backgroundColor: '#ffcd62ff',
     borderRadius: 20,
     padding: 24,
     marginBottom: 28,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: '#1a1a1a', marginBottom: 14 },
-  seeAll: { fontSize: 13, color: '#A855C1', marginBottom: 14 },
+  seeAll: { fontSize: 13, color: '#ffcd62ff', marginBottom: 14 },
 
   actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 28 },
   actionCard: {
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
 
   emptyState: { alignItems: 'center', paddingVertical: 30 },
   emptyText: { color: '#999', fontSize: 15 },
-  emptyLink: { color: '#A855C1', marginTop: 8, fontSize: 14 },
+  emptyLink: { color: '#ffcd62ff', marginTop: 8, fontSize: 14 },
 
   expenseRow: {
     flexDirection: 'row',

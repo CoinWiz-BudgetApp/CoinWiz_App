@@ -4,7 +4,7 @@ export const db = SQLite.openDatabaseSync('coinwiz.db');
 
 export function initDB() {
   db.execSync(`
-    
+
     PRAGMA journal_mode = WAL;
 
     CREATE TABLE IF NOT EXISTS users (

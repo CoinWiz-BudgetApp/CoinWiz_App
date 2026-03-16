@@ -31,11 +31,14 @@ export default function RegisterScreen() {
     try {
       db.runSync(
         'INSERT INTO users (username, password, recovery_pin) VALUES (?, ?, ?)',
-        [username, password, pin || null]
+          username,
+          password,
+          pin || null
       );
       Alert.alert('Success', 'Account created! Please log in.');
       router.replace('/login');
-    } catch {
+    } catch (error) {
+      console.log('DB ERROR:', error);
       Alert.alert('Error', 'Username already exists. Please choose another.');
     }
   };
@@ -108,7 +111,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F4F4' },
   header: {
     height: 60,
-    backgroundColor: '#A855C1',
+    backgroundColor: '#ffcd62ff',
   },
   inner: {
     flex: 1,
@@ -141,10 +144,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 18,
     fontSize: 15,
-    color: '#1a1a1a',   // ✅ Fixed: was 'white' before
+    color: '#1a1a1a',
   },
   button: {
-    backgroundColor: '#A855C1',
+    backgroundColor: '#ffcd62ff',
     padding: 15,
     borderRadius: 12,
     marginTop: 8,
@@ -162,7 +165,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginLinkBold: {
-    color: '#A855C1',
+    color: '#ffcd62ff',
     fontWeight: '600',
   },
 });

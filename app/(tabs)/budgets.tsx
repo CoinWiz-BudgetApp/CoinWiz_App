@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   barTrack: { height: 7, backgroundColor: '#F0EEF4', borderRadius: 4, marginBottom: 8, overflow: 'hidden' },
   barFill: { height: 7, borderRadius: 4 },
   overText: { fontSize: 12, color: '#EF4444', marginBottom: 6 },
-  setLimit: { fontSize: 13, color: '#A855C1', marginTop: 4 },
+  setLimit: { fontSize: 13, color: '#ffcd62ff', marginTop: 4 },
   editRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
   limitInput: {
     flex: 1,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1a1a1a',
   },
-  saveBtn: { backgroundColor: '#A855C1', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  saveBtn: { backgroundColor: '#ffcd62ff', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   saveBtnText: { color: 'white', fontWeight: '600', fontSize: 13 },
   cancelBtn: { padding: 8 },
   cancelText: { color: '#888', fontSize: 15 },

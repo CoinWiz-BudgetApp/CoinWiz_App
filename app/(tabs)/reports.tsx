@@ -116,11 +116,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
     borderWidth: 1.5, borderColor: '#DDD', backgroundColor: '#FFF', marginRight: 8,
   },
-  chipActive: { backgroundColor: '#A855C1', borderColor: '#A855C1' },
+  chipActive: { backgroundColor: '#ffcd62ff', borderColor: '#ffcd62ff' },
   chipText: { fontSize: 13, color: '#555', fontWeight: '500' },
   chipTextActive: { color: 'white' },
   summaryCard: {
-    backgroundColor: '#A855C1', borderRadius: 16, padding: 20, marginBottom: 24,
+    backgroundColor: '#ffcd62ff', borderRadius: 16, padding: 20, marginBottom: 24,
   },
   summaryLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 13 },
   summaryAmount: { color: 'white', fontSize: 34, fontWeight: 'bold', marginTop: 4 },

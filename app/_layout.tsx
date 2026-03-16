@@ -14,7 +14,6 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  // ✅ Fixed: useEffect is now inside the component
   useEffect(() => {
     initDB();
   }, []);
@@ -28,10 +27,10 @@ export default function RootLayout() {
           <Stack.Screen name="register"        options={{ headerShown: false }} />
           <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)"          options={{ headerShown: false }} />
-          <Stack.Screen name="add-expense"     options={{ title: 'Add Expense',     headerTintColor: '#A855C1' }} />
-          <Stack.Screen name="budget-details"  options={{ title: 'Budget Details',  headerTintColor: '#A855C1' }} />
-          <Stack.Screen name="reports"         options={{ title: 'Reports',         headerTintColor: '#A855C1' }} />
-          <Stack.Screen name="settings"        options={{ title: 'Settings',        headerTintColor: '#A855C1' }} />
+          <Stack.Screen name="add-expense"     options={{ title: 'Add Expense',     headerTintColor: '#ffcd62ff' }} />
+          <Stack.Screen name="budget-details"  options={{ title: 'Budget Details',  headerTintColor: '#ffcd62ff' }} />
+          <Stack.Screen name="reports"         options={{ title: 'Reports',         headerTintColor: '#ffcd62ff' }} />
+          <Stack.Screen name="settings"        options={{ title: 'Settings',        headerTintColor: '#ffcd62ff' }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
