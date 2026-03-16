@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   avatar: {
     width: 52, height: 52, borderRadius: 26,
-    backgroundColor: '#ffcd62ff', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#af63ffff', alignItems: 'center', justifyContent: 'center',
   },
   avatarText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
   accountName: { fontSize: 17, fontWeight: '700', color: '#1a1a1a' },

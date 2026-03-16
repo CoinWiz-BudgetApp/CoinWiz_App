@@ -49,7 +49,7 @@ export default function LoginScreen() {
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/images/react-logo.png')}
+          source={require('../assets/images/coin-logo.png')}
           style={styles.logo}
         />
       </View>
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: '140%',
     height: 70,
-    backgroundColor: '#ffcd62ff',
+    backgroundColor: '#af63ffff',
   },
   logoContainer: {
     marginTop: 150,
@@ -150,13 +150,13 @@ const styles = StyleSheet.create({
     marginTop: -6,
   },
   forgotText: {
-    color: '#ffcd62ff',
+    color: '#af63ffff',
     fontSize: 13,
   },
   loginButton: {
     width: '50%',
     height: 48,
-    backgroundColor: '#ffcd62ff',
+    backgroundColor: '#af63ffff',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',

@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F4F4' },
   header: {
     height: 60,
-    backgroundColor: '#ffcd62ff',
+    backgroundColor: '#af63ffff',
   },
   inner: {
     flex: 1,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   button: {
-    backgroundColor: '#ffcd62ff',
+    backgroundColor: '#af63ffff',
     padding: 15,
     borderRadius: 12,
     marginTop: 8,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginLinkBold: {
-    color: '#ffcd62ff',
+    color: '#af63ffff',
     fontWeight: '600',
   },
 });

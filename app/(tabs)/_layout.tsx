@@ -4,7 +4,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-const ORG = '#ffcd62ff';
+const PURP = '#af63ffff';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -12,7 +12,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: ORG,
+        tabBarActiveTintColor: PURP,
         tabBarInactiveTintColor: '#999',
         headerShown: false,
         tabBarButton: HapticTab,
