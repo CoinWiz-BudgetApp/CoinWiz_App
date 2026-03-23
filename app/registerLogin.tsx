@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { db } from '../database/db';
 
 export default function RegisterLoginScreen() {
@@ -10,7 +10,6 @@ export default function RegisterLoginScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const createAccount = async () => {
-
     if (!email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill all fields");
       return;
@@ -27,7 +26,6 @@ export default function RegisterLoginScreen() {
     }
 
     try {
-
       const database = await db;
 
       await database.runAsync(
@@ -50,8 +48,14 @@ export default function RegisterLoginScreen() {
       <View style={styles.header} />
 
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backArrow}>←</Text>
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => router.back()}
+      >
+        <Image
+          source={require('../assets/images/backButton.png')}
+          style={styles.backIcon}
+        />
       </TouchableOpacity>
 
       {/* Title */}
@@ -124,14 +128,13 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 25,
-    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  backArrow: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  backIcon: {
+    width: 40,
+    height: 40,
   },
 
   titleContainer: {
