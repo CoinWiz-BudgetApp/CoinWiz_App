@@ -176,16 +176,15 @@ const styles = StyleSheet.create({
 
   menuButton: {
     position: 'absolute',
-    top: 100,
-    left: 30,
-    backgroundColor: '#ddd',
+    top: 95,
+    left: 25,
     padding: 10,
-    borderRadius: 50,
+    borderRadius: 25,
   },
 
   menuIcon: {
-    width: 24,
-    height: 24,
+    width: 40,
+    height: 40,
   },
 
   title: {
@@ -263,14 +262,14 @@ const styles = StyleSheet.create({
   },
 
   sidebarBack: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
     marginBottom: 60,
   },
 
   sidebarText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 25,
     marginBottom: 50,
     fontWeight: '600',
   },
