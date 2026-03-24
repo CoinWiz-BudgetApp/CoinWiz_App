@@ -1,11 +1,53 @@
-import React from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { db } from "../database/db";
+
+type User = {
+  id: number;
+  username: string;
+  password: string;
+  bankLinked: number;
+};
 
 export default function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const login = async () => {
+  if (!email || !password) {
+    Alert.alert("Error", "Please fill all fields");
+    return;
+  }
+
+  try {
+    const database = await db;
+
+    const user = await database.getFirstAsync<User>(
+      "SELECT * FROM users WHERE username = ? AND password = ?",
+      [email, password]
+    );
+
+    if (!user) {
+      Alert.alert("Login Failed", "Invalid credentials");
+      return;
+    }
+
+    if (user.bankLinked === 0) {
+      router.replace("/connectBank");
+    } else {
+      router.replace("/home");
+    }
+
+    } catch (error) {
+      Alert.alert("Error", "Login failed");
+    }
+  };
+
   return (
     <View style={styles.container}>
       
-      {/* Purple curved header */}
+      {/* Purple header */}
       <View style={styles.header} />
 
       {/* Logo Area */}
@@ -25,6 +67,8 @@ export default function LoginScreen() {
         placeholder="Email Address"
         placeholderTextColor="#666"
         style={styles.input}
+        value={email}
+        onChangeText={setEmail}
       />
 
       <TextInput
@@ -32,15 +76,17 @@ export default function LoginScreen() {
         placeholderTextColor="#666"
         secureTextEntry
         style={styles.input}
+        value={password}
+        onChangeText={setPassword}
       />
 
       {/* Login Button */}
-      <TouchableOpacity style={styles.loginButton}>
+      <TouchableOpacity style={styles.loginButton} onPress={login}>
         <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
 
       {/* Create account */}
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/registerName')}>
         <Text style={styles.createAccount}>Create an account</Text>
       </TouchableOpacity>
 
@@ -59,7 +105,7 @@ const styles = StyleSheet.create({
   header: {
     position: "absolute",
     top: 0,
-    width: "140%",
+    width: "100%",
     height: 70,
     backgroundColor: "#A855C1",
   },
@@ -74,8 +120,6 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     resizeMode: 'contain',
-    justifyContent: "center",
-    alignItems: "center",
   },
 
   title: {
