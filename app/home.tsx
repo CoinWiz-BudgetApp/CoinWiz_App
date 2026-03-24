@@ -1,8 +1,9 @@
-import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import Sidebar from '../components/Sidebar';
 
+// Example transactions
 const transactions = [
   { id: '1', name: 'Publix', category: 'Grocery', amount: '-$54.20' },
   { id: '2', name: 'RaceTrac', category: 'Gas', amount: '-$26.80' },
@@ -78,33 +79,10 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
 
-      {/* Sidebar */}
-      {sidebarOpen && (
-        <View style={styles.sidebar}>
-          <TouchableOpacity onPress={() => setSidebarOpen(false)}>
-            <Image
-              source={require('../assets/images/sidebarButton.png')}
-              style={styles.sidebarBack}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.replace('/home')}>
-            <Text style={styles.sidebarText}>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Text style={styles.sidebarText}>Profile</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push('/reports')}>
-            <Text style={styles.sidebarText}>Reports</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push('/settings')}>
-            <Text style={styles.sidebarText}>Settings</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <Sidebar
+        visible={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* Main Content */}
       <View style={styles.main}>
@@ -248,29 +226,5 @@ const styles = StyleSheet.create({
 
   amount: {
     fontWeight: 'bold',
-  },
-
-  /* Sidebar */
-  sidebar: {
-    position: 'absolute',
-    width: '65%',
-    height: '100%',
-    backgroundColor: '#5b2a5f',
-    paddingTop: 105,
-    paddingLeft: 35,
-    zIndex: 10,
-  },
-
-  sidebarBack: {
-    width: 40,
-    height: 40,
-    marginBottom: 60,
-  },
-
-  sidebarText: {
-    color: 'white',
-    fontSize: 25,
-    marginBottom: 50,
-    fontWeight: '600',
   },
 });
