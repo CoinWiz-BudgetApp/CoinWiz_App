@@ -2,25 +2,31 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { initDB } from '../database/db';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
-useEffect(() => {
-  initDB();
-}, []);
+//import { clearDatabase, initDB } from '../database/db';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  initialRouteName: "login",
 };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
+  useEffect(() => {
+  async function setup() {
+    //await initDB();
+    //await clearDatabase();
+  }
+
+  setup();
+}, []);
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
