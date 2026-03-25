@@ -66,6 +66,11 @@ export default function SettingsScreen() {
         <Text style={styles.sectionLabel}>Account</Text>
         <View style={styles.section}>
           <SettingRow
+            icon="building.columns.fill"
+            label="Link Bank Account"
+            onPress={() => router.push('/link-bank' as any)}
+          />
+          <SettingRow
             icon="lock.fill"
             label="Change Password"
             onPress={() => router.push('/forgot-password')}

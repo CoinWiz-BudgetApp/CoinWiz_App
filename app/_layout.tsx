@@ -28,6 +28,7 @@ export default function RootLayout() {
           <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)"          options={{ headerShown: false }} />
           <Stack.Screen name="add-expense"     options={{ title: 'Add Expense',     headerTintColor: '#af63ffff' }} />
+          <Stack.Screen name="link-bank"       options={{ title: 'Link Bank Account', headerTintColor: '#af63ffff' }} />
           <Stack.Screen name="budget-details"  options={{ title: 'Budget Details',  headerTintColor: '#af63ffff' }} />
           <Stack.Screen name="reports"         options={{ title: 'Reports',         headerTintColor: '#af63ffff' }} />
           <Stack.Screen name="settings"        options={{ title: 'Settings',        headerTintColor: '#af63ffff' }} />
