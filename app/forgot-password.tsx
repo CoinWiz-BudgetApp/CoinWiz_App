@@ -1,12 +1,12 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert, KeyboardAvoidingView, Platform,
-    StyleSheet,
-    Text, TextInput, TouchableOpacity,
-    View,
+  Alert, KeyboardAvoidingView, Platform,
+  StyleSheet,
+  Text, TextInput, TouchableOpacity,
+  View,
 } from 'react-native';
-import { db } from '../database/db';
+import { supabase } from '../database/db';
 
 type Step = 'verify' | 'reset';
 
@@ -16,26 +16,31 @@ export default function ForgotPasswordScreen() {
   const [pin, setPin] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [verifiedUserId, setVerifiedUserId] = useState<number | null>(null);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
 
-  const verifyPin = () => {
+  const verifyPin = async () => {
     if (!username || !pin) {
       Alert.alert('Error', 'Please enter your username and PIN.');
       return;
     }
-    const user = db.getFirstSync<{ id: number }>(
-      'SELECT id FROM users WHERE username = ? AND recovery_pin = ?',
-      [username, pin]
-    );
-    if (user) {
-      setVerifiedUserId(user.id);
-      setStep('reset');
-    } else {
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('email')
+      .eq('username', username)
+      .eq('recovery_pin', pin)
+      .single();
+
+    if (error || !data) {
       Alert.alert('Error', 'Username or PIN is incorrect.');
+      return;
     }
+
+    setVerifiedEmail(data.email);
+    setStep('reset');
   };
 
-  const resetPassword = () => {
+  const resetPassword = async () => {
     if (!newPassword || !confirmPassword) {
       Alert.alert('Error', 'Please fill in both password fields.');
       return;
@@ -48,7 +53,18 @@ export default function ForgotPasswordScreen() {
       Alert.alert('Error', 'Password must be at least 6 characters.');
       return;
     }
-    db.runSync('UPDATE users SET password = ? WHERE id = ?', [newPassword, verifiedUserId]);
+
+    if (!verifiedEmail) return;
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
+    }
+
     Alert.alert('Success', 'Password reset! Please log in with your new password.', [
       { text: 'OK', onPress: () => router.replace('/login') },
     ]);
@@ -125,7 +141,7 @@ export default function ForgotPasswordScreen() {
         )}
 
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backLink}>← Back to Login</Text>
+          <Text style={styles.backLink}>Back to Login</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -134,7 +150,7 @@ export default function ForgotPasswordScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F4F4' },
-  header: { height: 60, backgroundColor: '#ffcd62ff', },
+  header: { height: 70, backgroundColor: '#c774f7', },
   inner: { flex: 1, padding: 28, paddingTop: 32 },
   title: { fontSize: 26, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 6 },
   subtitle: { fontSize: 14, color: '#666', marginBottom: 28 },

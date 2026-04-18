@@ -1,4 +1,4 @@
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
@@ -9,11 +9,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { db } from '../../database/db';
+import { supabase } from '../../database/db';
 import { useAuth } from '../AuthContext';
 
 type Expense = {
-  id: number;
+  id: string; // ✅ CHANGED (was number)
   title: string;
   amount: number;
   category: string;
@@ -40,18 +40,42 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!user) return;
-      const rows = db.getAllSync<Expense>(
-        'SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC LIMIT 5',
-        [user.id]
-      );
-      setExpenses(rows);
+      const load = async () => {
+        if (!user) return;
 
-      const result = db.getFirstSync<{ total: number }>(
-        'SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = ?',
-        [user.id]
-      );
-      setTotalExpenses(result?.total ?? 0);
+        // 🔁 GET RECENT EXPENSES
+        const { data: expenseData, error: expenseError } = await supabase
+          .from('expenses')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: false })
+          .limit(5);
+
+        if (expenseError) {
+          console.error(expenseError);
+          return;
+        }
+
+        setExpenses(expenseData ?? []);
+
+        // 🔁 GET TOTAL EXPENSES
+        const { data: totalData, error: totalError } = await supabase
+          .from('expenses')
+          .select('amount')
+          .eq('user_id', user.id);
+
+        if (totalError) {
+          console.error(totalError);
+          return;
+        }
+
+        const total =
+          totalData?.reduce((sum, e) => sum + Number(e.amount), 0) ?? 0;
+
+        setTotalExpenses(total);
+      };
+
+      load();
     }, [user])
   );
 
@@ -62,7 +86,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.greeting}>Hello, {user?.username} 👋</Text>
+            <Text style={styles.greeting}>Hello, {user?.username}!</Text>
             <Text style={styles.subGreeting}>Here's your financial summary</Text>
           </View>
         </View>
@@ -93,7 +117,7 @@ export default function HomeScreen() {
             style={styles.actionCard}
             onPress={() => router.push('/add-expense')}
           >
-            <IconSymbol name="plus.circle.fill" size={28} color="#A855C1" />
+            <Ionicons name="card" size={28} color="#A855C1" />
             <Text style={styles.actionLabel}>Add Expense</Text>
           </TouchableOpacity>
 
@@ -101,7 +125,7 @@ export default function HomeScreen() {
             style={styles.actionCard}
             onPress={() => router.push('/(tabs)/budgets')}
           >
-            <IconSymbol name="chart.pie.fill" size={28} color="#3B82F6" />
+            <Ionicons name="wallet" size={28} color="#3B82F6" />
             <Text style={styles.actionLabel}>View Budget</Text>
           </TouchableOpacity>
 
@@ -109,7 +133,7 @@ export default function HomeScreen() {
             style={styles.actionCard}
             onPress={() => router.push('/(tabs)/reports')}
           >
-            <IconSymbol name="chart.bar.fill" size={28} color="#10B981" />
+            <Ionicons name="bar-chart" size={28} color="#10B981" />
             <Text style={styles.actionLabel}>Reports</Text>
           </TouchableOpacity>
 
@@ -117,7 +141,7 @@ export default function HomeScreen() {
             style={styles.actionCard}
             onPress={() => router.push('/(tabs)/settings')}
           >
-            <IconSymbol name="gearshape.fill" size={28} color="#F97316" />
+            <Ionicons name="settings" size={28} color="#F97316" />
             <Text style={styles.actionLabel}>Settings</Text>
           </TouchableOpacity>
         </View>
@@ -134,18 +158,27 @@ export default function HomeScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>No expenses yet.</Text>
             <TouchableOpacity onPress={() => router.push('/add-expense')}>
-              <Text style={styles.emptyLink}>Add your first expense →</Text>
+              <Text style={styles.emptyLink}>Add your first expense</Text>
             </TouchableOpacity>
           </View>
         ) : (
           expenses.map((e) => (
             <View key={e.id} style={styles.expenseRow}>
-              <View style={[styles.categoryDot, { backgroundColor: CATEGORY_COLORS[e.category] ?? '#6B7280' }]} />
+              <View
+                style={[
+                  styles.categoryDot,
+                  { backgroundColor: CATEGORY_COLORS[e.category] ?? '#6B7280' },
+                ]}
+              />
               <View style={styles.expenseInfo}>
                 <Text style={styles.expenseTitle}>{e.title}</Text>
-                <Text style={styles.expenseCategory}>{e.category} · {e.date}</Text>
+                <Text style={styles.expenseCategory}>
+                  {e.category} · {e.date}
+                </Text>
               </View>
-              <Text style={styles.expenseAmount}>−${e.amount.toFixed(2)}</Text>
+              <Text style={styles.expenseAmount}>
+                −${Number(e.amount).toFixed(2)}
+              </Text>
             </View>
           ))
         )}
@@ -159,7 +192,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F8F6FB' },
   container: { padding: 20, paddingBottom: 40 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  greeting: { fontSize: 22, fontWeight: 'bold', color: '#1a1a1a' },
+  greeting: { fontSize: 24, fontWeight: 'bold', color: '#1a1a1a' },
   subGreeting: { fontSize: 13, color: '#888', marginTop: 2 },
 
   balanceCard: {

@@ -7,7 +7,7 @@ import {
   StyleSheet, Text, TextInput,
   TouchableOpacity, View,
 } from 'react-native';
-import { db } from '../database/db';
+import { supabase } from '../database/db';
 import { useAuth } from './AuthContext';
 
 export default function LoginScreen() {
@@ -15,24 +15,36 @@ export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert('Error', 'Please enter your username and password.');
       return;
     }
 
     try {
-      const user = db.getFirstSync<{ id: number; username: string }>(
-        'SELECT id, username FROM users WHERE username = ? AND password = ?',
-        [username, password]
-      );
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, email')
+        .eq('username', username)
+        .single();
 
-      if (user) {
-        login(user);
-        router.replace('/(tabs)');
-      } else {
+      if (error || !data) {
         Alert.alert('Login Failed', 'Incorrect username or password.');
+        return;
       }
+
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password,
+      });
+
+      if (authError) {
+        Alert.alert('Login Failed', 'Incorrect username or password.');
+        return;
+      }
+
+      login({ id: data.id, username: data.username });
+      router.replace('/(tabs)');
     } catch (e) {
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
@@ -43,10 +55,8 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* Purple curved header */}
       <View style={styles.header} />
 
-      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
           source={require('../assets/images/coin-logo.png')}
@@ -75,7 +85,6 @@ export default function LoginScreen() {
         style={styles.input}
       />
 
-      {/* Forgot password */}
       <TouchableOpacity
         style={styles.forgotContainer}
         onPress={() => router.push('/forgot-password')}
@@ -83,13 +92,11 @@ export default function LoginScreen() {
         <Text style={styles.forgotText}>Forgot password?</Text>
       </TouchableOpacity>
 
-      {/* Login Button */}
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
 
-      {/* Create account */}
-      <TouchableOpacity onPress={() => router.push('/register')}>
+      <TouchableOpacity onPress={() => router.push('/register' as any)}>
         <Text style={styles.createAccount}>Create an account</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>

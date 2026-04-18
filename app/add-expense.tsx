@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text, TextInput, TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text, TextInput, TouchableOpacity,
+  View,
 } from 'react-native';
-import { db } from '../database/db';
+import { supabase } from '../database/db';
 import { useAuth } from './AuthContext';
 
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Health', 'Entertainment', 'Other'];
@@ -30,7 +30,7 @@ export default function AddExpenseScreen() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!title.trim()) {
       Alert.alert('Error', 'Please enter a title for the expense.');
       return;
@@ -41,10 +41,22 @@ export default function AddExpenseScreen() {
       return;
     }
 
-    db.runSync(
-      'INSERT INTO expenses (user_id, title, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      [user!.id, title.trim(), parsed, category, today]
-    );
+    const { error } = await supabase
+      .from('expenses')
+      .insert([
+        {
+          user_id: user!.id,
+          title: title.trim(),
+          amount: parsed,
+          category,
+          date: today,
+        },
+      ]);
+
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
+    }
 
     Alert.alert('Added!', `${title} — $${parsed.toFixed(2)} added.`, [
       { text: 'Done', onPress: () => router.back() },

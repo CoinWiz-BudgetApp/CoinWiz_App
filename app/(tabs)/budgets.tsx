@@ -1,16 +1,16 @@
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { db } from '../../database/db';
+import { supabase } from '../../database/db';
 import { useAuth } from '../AuthContext';
 
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Health', 'Entertainment', 'Other'];
@@ -32,45 +32,81 @@ export default function BudgetsScreen() {
   const [editing, setEditing] = useState<string | null>(null);
   const [limitInput, setLimitInput] = useState('');
 
-  const load = () => {
+  const load = async () => {
     if (!user) return;
+
+    // Get all budgets for user
+    const { data: budgetData, error: budgetError } = await supabase
+      .from('budgets')
+      .select('category, limit_amount')
+      .eq('user_id', user.id);
+
+    if (budgetError) {
+      console.error(budgetError);
+      return;
+    }
+
+    // Get all expenses for user
+    const { data: expenseData, error: expenseError } = await supabase
+      .from('expenses')
+      .select('category, amount')
+      .eq('user_id', user.id);
+
+    if (expenseError) {
+      console.error(expenseError);
+      return;
+    }
+
     const rows: BudgetRow[] = CATEGORIES.map((cat) => {
-      const budget = db.getFirstSync<{ limit_amount: number }>(
-        'SELECT limit_amount FROM budgets WHERE user_id = ? AND category = ?',
-        [user.id, cat]
-      );
-      const spent = db.getFirstSync<{ total: number }>(
-        'SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = ? AND category = ?',
-        [user.id, cat]
-      );
+      const budget = budgetData?.find((b) => b.category === cat);
+      const spent =
+        expenseData
+          ?.filter((e) => e.category === cat)
+          .reduce((sum, e) => sum + Number(e.amount), 0) ?? 0;
+
       return {
         category: cat,
         limit_amount: budget?.limit_amount ?? 0,
-        spent: spent?.total ?? 0,
+        spent,
       };
     });
+
     setBudgets(rows);
   };
 
-  useFocusEffect(useCallback(load, [user]));
+  useFocusEffect(useCallback(() => {
+    load();
+  }, [user]));
 
-  const saveLimit = (category: string) => {
+  const saveLimit = async (category: string) => {
     const val = parseFloat(limitInput);
     if (isNaN(val) || val <= 0) {
       Alert.alert('Error', 'Enter a valid budget amount.');
       return;
     }
-    const exists = db.getFirstSync(
-      'SELECT id FROM budgets WHERE user_id = ? AND category = ?',
-      [user!.id, category]
-    );
-    if (exists) {
-      db.runSync('UPDATE budgets SET limit_amount = ? WHERE user_id = ? AND category = ?',
-        [val, user!.id, category]);
+
+    // Check if exists
+    const { data: existing } = await supabase
+      .from('budgets')
+      .select('id')
+      .eq('user_id', user!.id)
+      .eq('category', category)
+      .single();
+
+    if (existing) {
+      await supabase
+        .from('budgets')
+        .update({ limit_amount: val })
+        .eq('user_id', user!.id)
+        .eq('category', category);
     } else {
-      db.runSync('INSERT INTO budgets (user_id, category, limit_amount) VALUES (?, ?, ?)',
-        [user!.id, category, val]);
+      await supabase
+        .from('budgets')
+        .insert([
+          { user_id: user!.id, category, limit_amount: val }
+        ]);
     }
+
     setEditing(null);
     setLimitInput('');
     load();
@@ -127,8 +163,15 @@ export default function BudgetsScreen() {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <TouchableOpacity onPress={() => { setEditing(b.category); setLimitInput(b.limit_amount > 0 ? String(b.limit_amount) : ''); }}>
-                  <Text style={styles.setLimit}>{b.limit_amount > 0 ? 'Edit limit' : '+ Set limit'}</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setEditing(b.category);
+                    setLimitInput(b.limit_amount > 0 ? String(b.limit_amount) : '');
+                  }}
+                >
+                  <Text style={styles.setLimit}>
+                    {b.limit_amount > 0 ? 'Edit limit' : '+ Set limit'}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>

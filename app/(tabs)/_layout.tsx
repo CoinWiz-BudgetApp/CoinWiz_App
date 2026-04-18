@@ -1,6 +1,6 @@
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
@@ -14,7 +14,13 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: PURP,
         tabBarInactiveTintColor: '#999',
-        headerShown: false,
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#c774f7',
+          height: 70,
+        },
+        headerTitle: '',
+        headerShadowVisible: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
           borderTopWidth: 0,
@@ -29,8 +35,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={26} name="house.fill" color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size ?? 26} color={color} />
           ),
         }}
       />
@@ -38,8 +44,8 @@ export default function TabLayout() {
         name="budgets"
         options={{
           title: 'Budgets',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={26} name="chart.pie.fill" color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="wallet" size={size ?? 26} color={color} />
           ),
         }}
       />
@@ -47,8 +53,8 @@ export default function TabLayout() {
         name="reports"
         options={{
           title: 'Reports',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={26} name="chart.bar.fill" color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart" size={size ?? 26} color={color} />
           ),
         }}
       />
@@ -56,8 +62,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={26} name="gearshape.fill" color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings" size={size ?? 26} color={color} />
           ),
         }}
       />

@@ -6,16 +6,17 @@ import {
   Text, TextInput, TouchableOpacity,
   View,
 } from 'react-native';
-import { db } from '../database/db';
+import { supabase } from '../database/db';
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pin, setPin] = useState('');
 
-  const register = () => {
-    if (!username || !password || !confirmPassword) {
+  const register = async () => {
+    if (!username || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
@@ -28,19 +29,34 @@ export default function RegisterScreen() {
       return;
     }
 
-    try {
-      db.runSync(
-        'INSERT INTO users (username, password, recovery_pin) VALUES (?, ?, ?)',
-          username,
-          password,
-          pin || null
-      );
-      Alert.alert('Success', 'Account created! Please log in.');
-      router.replace('/login');
-    } catch (error) {
-      console.log('DB ERROR:', error);
-      Alert.alert('Error', 'Username already exists. Please choose another.');
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (authError || !authData.user) {
+      Alert.alert('Error', authError?.message || 'Registration failed.');
+      return;
     }
+
+    const { error: dbError } = await supabase
+      .from('users')
+      .insert([
+        {
+          id: authData.user.id,
+          username,
+          email,
+          recovery_pin: pin || null,
+        },
+      ]);
+
+    if (dbError) {
+      Alert.alert('Error', 'Username already exists. Please choose another.');
+      return;
+    }
+
+    Alert.alert('Success', 'Account created! Please log in.');
+    router.replace('/login');
   };
 
   return (
@@ -64,6 +80,16 @@ export default function RegisterScreen() {
           value={username}
         />
 
+        <Text style={styles.label}>Email *</Text>
+        <TextInput
+          placeholder="Enter your email"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+          style={styles.input}
+          onChangeText={setEmail}
+          value={email}
+        />
+
         <Text style={styles.label}>Password *</Text>
         <TextInput
           placeholder="At least 6 characters"
@@ -84,7 +110,7 @@ export default function RegisterScreen() {
           value={confirmPassword}
         />
 
-        <Text style={styles.label}>Recovery PIN (optional)</Text>
+        <Text style={styles.label}>Recovery PIN</Text>
         <TextInput
           placeholder="4-digit PIN for password recovery"
           placeholderTextColor="#999"
@@ -100,7 +126,9 @@ export default function RegisterScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push('/login')}>
-          <Text style={styles.loginLink}>Already have an account? <Text style={styles.loginLinkBold}>Log in</Text></Text>
+          <Text style={styles.loginLink}>
+            Already have an account? <Text style={styles.loginLinkBold}>Log in</Text>
+          </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -110,7 +138,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F4F4' },
   header: {
-    height: 60,
+    height: 70,
     backgroundColor: '#af63ffff',
   },
   inner: {

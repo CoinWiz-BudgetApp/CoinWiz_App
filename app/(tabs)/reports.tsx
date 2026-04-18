@@ -1,18 +1,18 @@
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { db } from '../../database/db';
+import { supabase } from '../../database/db';
 import { useAuth } from '../AuthContext';
 
-type Expense = { id: number; title: string; amount: number; category: string; date: string };
+type Expense = { id: string; title: string; amount: number; category: string; date: string };
 
 const CATEGORIES = ['All', 'Food', 'Transport', 'Shopping', 'Health', 'Entertainment', 'Other'];
 
@@ -30,39 +30,53 @@ export default function ReportsScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filter, setFilter] = useState('All');
 
-  const load = () => {
+  const load = async () => {
     if (!user) return;
-    const rows = db.getAllSync<Expense>(
-      'SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC',
-      [user.id]
-    );
-    setExpenses(rows);
+
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setExpenses(data ?? []);
   };
 
-  useFocusEffect(useCallback(load, [user]));
+  useFocusEffect(useCallback(() => {
+    load();
+  }, [user]));
 
-  const deleteExpense = (id: number) => {
+  const deleteExpense = (id: string) => {
     Alert.alert('Delete', 'Remove this expense?', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive',
-        onPress: () => {
-          db.runSync('DELETE FROM expenses WHERE id = ?', [id]);
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await supabase
+            .from('expenses')
+            .delete()
+            .eq('id', id);
+
           load();
         },
       },
     ]);
   };
 
-  const filtered = filter === 'All' ? expenses : expenses.filter(e => e.category === filter);
-  const total = filtered.reduce((sum, e) => sum + e.amount, 0);
+  const filtered = filter === 'All' ? expenses : expenses.filter((e) => e.category === filter);
+  const total = filtered.reduce((sum, e) => sum + Number(e.amount), 0);
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <Text style={styles.heading}>Reports</Text>
 
-        {/* Category filter */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
@@ -70,19 +84,23 @@ export default function ReportsScreen() {
               style={[styles.chip, filter === cat && styles.chipActive]}
               onPress={() => setFilter(cat)}
             >
-              <Text style={[styles.chipText, filter === cat && styles.chipTextActive]}>{cat}</Text>
+              <Text style={[styles.chipText, filter === cat && styles.chipTextActive]}>
+                {cat}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        {/* Summary */}
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>{filter === 'All' ? 'Total Spent' : `${filter} Total`}</Text>
+          <Text style={styles.summaryLabel}>
+            {filter === 'All' ? 'Total Spent' : `${filter} Total`}
+          </Text>
           <Text style={styles.summaryAmount}>${total.toFixed(2)}</Text>
-          <Text style={styles.summaryCount}>{filtered.length} transaction{filtered.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.summaryCount}>
+            {filtered.length} transaction{filtered.length !== 1 ? 's' : ''}
+          </Text>
         </View>
 
-        {/* Expense list */}
         {filtered.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyText}>No expenses in this category.</Text>
@@ -90,13 +108,25 @@ export default function ReportsScreen() {
         ) : (
           filtered.map((e) => (
             <View key={e.id} style={styles.row}>
-              <View style={[styles.dot, { backgroundColor: CATEGORY_COLORS[e.category] ?? '#6B7280' }]} />
+              <View
+                style={[
+                  styles.dot,
+                  { backgroundColor: CATEGORY_COLORS[e.category] ?? '#6B7280' },
+                ]}
+              />
               <View style={styles.info}>
                 <Text style={styles.title}>{e.title}</Text>
-                <Text style={styles.meta}>{e.category} · {e.date}</Text>
+                <Text style={styles.meta}>
+                  {e.category} · {e.date}
+                </Text>
               </View>
-              <Text style={styles.amount}>−${e.amount.toFixed(2)}</Text>
-              <TouchableOpacity onPress={() => deleteExpense(e.id)} style={styles.deleteBtn}>
+              <Text style={styles.amount}>
+                −${Number(e.amount).toFixed(2)}
+              </Text>
+              <TouchableOpacity
+                onPress={() => deleteExpense(e.id)}
+                style={styles.deleteBtn}
+              >
                 <Text style={styles.deleteText}>✕</Text>
               </TouchableOpacity>
             </View>

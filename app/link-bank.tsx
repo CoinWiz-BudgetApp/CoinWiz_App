@@ -70,7 +70,7 @@ export default function LinkBankScreen() {
       <View style={styles.container}>
         <Text style={styles.heading}>Link Bank Account</Text>
         <Text style={styles.subheading}>
-          Connect to you bank below! We use Plaid to securely link your bank accounts and fetch transactions.
+          Connect to your bank below! We use Plaid to securely link your bank accounts and fetch transactions.
         </Text>
 
         {linkedBankName ? (
