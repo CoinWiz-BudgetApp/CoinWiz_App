@@ -9,11 +9,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../../context/_AuthContext';
 import { supabase } from '../../database/db';
-import { useAuth } from '../AuthContext';
 
 type Expense = {
-  id: string; // ✅ CHANGED (was number)
+  id: string;
   title: string;
   amount: number;
   category: string;
@@ -43,7 +43,7 @@ export default function HomeScreen() {
       const load = async () => {
         if (!user) return;
 
-        // 🔁 GET RECENT EXPENSES
+        // Get recent expense
         const { data: expenseData, error: expenseError } = await supabase
           .from('expenses')
           .select('*')
@@ -58,7 +58,7 @@ export default function HomeScreen() {
 
         setExpenses(expenseData ?? []);
 
-        // 🔁 GET TOTAL EXPENSES
+        // Get total expenses
         const { data: totalData, error: totalError } = await supabase
           .from('expenses')
           .select('amount')
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   subGreeting: { fontSize: 13, color: '#888', marginTop: 2 },
 
   balanceCard: {
-    backgroundColor: '#af63ffff',
+    backgroundColor: 'rgb(174, 99, 255)',
     borderRadius: 20,
     padding: 24,
     marginBottom: 28,

@@ -7,47 +7,43 @@ import {
   StyleSheet, Text, TextInput,
   TouchableOpacity, View,
 } from 'react-native';
+import { useAuth } from '../context/_AuthContext';
 import { supabase } from '../database/db';
-import { useAuth } from './AuthContext';
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert('Error', 'Please enter your username and password.');
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter your email and password.');
       return;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, username, email')
-        .eq('username', username)
-        .single();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (error || !data) {
-        Alert.alert('Login Failed', 'Incorrect username or password.');
-        return;
-      }
-
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password,
-      });
-
-      if (authError) {
-        Alert.alert('Login Failed', 'Incorrect username or password.');
-        return;
-      }
-
-      login({ id: data.id, username: data.username });
-      router.replace('/(tabs)');
-    } catch (e) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+    if (error || !data.user) {
+      Alert.alert('Login Failed', error?.message || 'Invalid credentials.');
+      return;
     }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('id, username, email')
+      .eq('id', data.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      Alert.alert('Error', 'Could not load user profile.');
+      return;
+    }
+
+    login(profile);
+    router.replace('/(tabs)');
   };
 
   return (
@@ -68,11 +64,11 @@ export default function LoginScreen() {
       <Text style={styles.subtitle}>Login to continue</Text>
 
       <TextInput
-        placeholder="Username"
+        placeholder="Email"
         placeholderTextColor="#999"
         autoCapitalize="none"
-        value={username}
-        onChangeText={setUsername}
+        value={email}
+        onChangeText={setEmail}
         style={styles.input}
       />
 
@@ -96,7 +92,7 @@ export default function LoginScreen() {
         <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/register' as any)}>
+      <TouchableOpacity onPress={() => router.push('/register')}>
         <Text style={styles.createAccount}>Create an account</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
@@ -114,7 +110,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: '140%',
     height: 70,
-    backgroundColor: '#af63ffff',
+    backgroundColor: '#9352be',
   },
   logoContainer: {
     marginTop: 150,

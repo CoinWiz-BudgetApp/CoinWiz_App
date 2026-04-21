@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -14,6 +15,8 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pin, setPin] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const register = async () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -91,24 +94,34 @@ export default function RegisterScreen() {
         />
 
         <Text style={styles.label}>Password *</Text>
-        <TextInput
-          placeholder="At least 6 characters"
-          placeholderTextColor="#999"
-          secureTextEntry
-          style={styles.input}
-          onChangeText={setPassword}
-          value={password}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            placeholder="At least 6 characters"
+            placeholderTextColor="#999"
+            secureTextEntry={!showPassword}
+            style={styles.passwordInput}
+            onChangeText={setPassword}
+            value={password}
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color="#888" />
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.label}>Confirm Password *</Text>
-        <TextInput
-          placeholder="Re-enter your password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          style={styles.input}
-          onChangeText={setConfirmPassword}
-          value={confirmPassword}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            placeholder="Re-enter your password"
+            placeholderTextColor="#999"
+            secureTextEntry={!showConfirmPassword}
+            style={styles.passwordInput}
+            onChangeText={setConfirmPassword}
+            value={confirmPassword}
+          />
+          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+            <Ionicons name={showConfirmPassword ? 'eye' : 'eye-off'} size={20} color="#888" />
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.label}>Recovery PIN</Text>
         <TextInput
@@ -139,7 +152,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F4F4' },
   header: {
     height: 70,
-    backgroundColor: '#af63ffff',
+    backgroundColor: '#9352be',
   },
   inner: {
     flex: 1,
@@ -173,6 +186,23 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     fontSize: 15,
     color: '#1a1a1a',
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#1a1a1a',
+    backgroundColor: '#FFF',
   },
   button: {
     backgroundColor: '#af63ffff',

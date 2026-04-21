@@ -1,16 +1,16 @@
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
+import { useAuth } from '../../context/_AuthContext';
 import { supabase } from '../../database/db';
-import { useAuth } from '../AuthContext';
 
 type Expense = { id: string; title: string; amount: number; category: string; date: string };
 

@@ -141,7 +141,7 @@ export default function ForgotPasswordScreen() {
         )}
 
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backLink}>Back to Login</Text>
+          <Text style={styles.backLink}>Back</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -150,7 +150,7 @@ export default function ForgotPasswordScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F4F4' },
-  header: { height: 70, backgroundColor: '#c774f7', },
+  header: { height: 70, backgroundColor: '#9352be', },
   inner: { flex: 1, padding: 28, paddingTop: 32 },
   title: { fontSize: 26, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 6 },
   subtitle: { fontSize: 14, color: '#666', marginBottom: 28 },

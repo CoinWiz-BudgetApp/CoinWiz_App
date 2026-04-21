@@ -2,14 +2,16 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
-  SafeAreaView,
-  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
-  Text, TextInput, TouchableOpacity,
+  Text,
+  TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../context/_AuthContext';
 import { supabase } from '../database/db';
-import { useAuth } from './AuthContext';
 
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Health', 'Entertainment', 'Other'];
 
@@ -35,6 +37,7 @@ export default function AddExpenseScreen() {
       Alert.alert('Error', 'Please enter a title for the expense.');
       return;
     }
+
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || parsed <= 0) {
       Alert.alert('Error', 'Please enter a valid amount.');
@@ -65,10 +68,14 @@ export default function AddExpenseScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.header} />
 
-        <Text style={styles.heading}>New Expense</Text>
+      <View style={styles.inner}>
+        <Text style={styles.title}>New Expense</Text>
 
         <Text style={styles.label}>Title</Text>
         <TextInput
@@ -96,11 +103,19 @@ export default function AddExpenseScreen() {
               key={cat}
               style={[
                 styles.categoryChip,
-                category === cat && { backgroundColor: CATEGORY_COLORS[cat], borderColor: CATEGORY_COLORS[cat] },
+                category === cat && {
+                  backgroundColor: CATEGORY_COLORS[cat],
+                  borderColor: CATEGORY_COLORS[cat],
+                },
               ]}
               onPress={() => setCategory(cat)}
             >
-              <Text style={[styles.categoryChipText, category === cat && { color: 'white' }]}>
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  category === cat && { color: 'white' },
+                ]}
+              >
                 {cat}
               </Text>
             </TouchableOpacity>
@@ -116,26 +131,46 @@ export default function AddExpenseScreen() {
         <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
-
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F8F6FB' },
-  container: { padding: 24, paddingBottom: 40 },
-  heading: { fontSize: 24, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 24 },
-  label: { fontSize: 13, fontWeight: '600', color: '#444', marginBottom: 8 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#F4F4F4' 
+  },
+  header: {
+    height: 70,
+    backgroundColor: '#9352be',
+  },
+  inner: {
+    flex: 1,
+    padding: 28,
+    paddingTop: 32,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 6,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#444',
+    marginBottom: 8,
+  },
   input: {
     backgroundColor: '#FFF',
     borderWidth: 1,
     borderColor: '#DDD',
-    borderRadius: 12,
+    borderRadius: 10,
     paddingHorizontal: 14,
-    paddingVertical: 13,
-    marginBottom: 20,
-    fontSize: 16,
+    paddingVertical: 12,
+    marginBottom: 18,
+    fontSize: 15,
     color: '#1a1a1a',
   },
   categoryGrid: {
@@ -164,12 +199,23 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#af63ffff',
-    padding: 16,
-    borderRadius: 14,
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 20,
     alignItems: 'center',
-    marginBottom: 12,
   },
-  buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-  cancelButton: { alignItems: 'center', padding: 12 },
-  cancelText: { color: '#888', fontSize: 15 },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  cancelButton: {
+    alignItems: 'center',
+    padding: 12,
+  },
+  cancelText: {
+    color: '#888',
+    fontSize: 15,
+  },
 });

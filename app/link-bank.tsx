@@ -2,7 +2,7 @@ import { createPlaidLinkToken, exchangePlaidPublicToken } from '@/lib/plaid';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { create, LinkExit, LinkSuccess, open } from 'react-native-plaid-link-sdk';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../context/_AuthContext';
 
 const PURP = '#af63ffff';
 

@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../../context/_AuthContext';
 import { supabase } from '../../database/db';
-import { useAuth } from '../AuthContext';
 
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Health', 'Entertainment', 'Other'];
 
