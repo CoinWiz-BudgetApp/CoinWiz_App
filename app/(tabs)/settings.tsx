@@ -101,7 +101,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.version}>CoinWiz v1.0.0</Text>
+        <Text style={styles.version}>CoinWiz v1.5.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
