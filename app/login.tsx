@@ -12,38 +12,51 @@ import { supabase } from '../database/db';
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter your email and password.');
+    if (!username || !password) {
+      Alert.alert('Error', 'Please enter your username and password.');
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // Get email from username
+      const { data: userRecord, error: userError } = await supabase
+        .from('users')
+        .select('email, id, username')
+        .eq('username', username)
+        .single();
 
-    if (error || !data.user) {
-      Alert.alert('Login Failed', error?.message || 'Invalid credentials.');
-      return;
+      if (userError || !userRecord) {
+        Alert.alert('Login Failed', 'Invalid username or password.');
+        return;
+      }
+
+      // Login using email
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: userRecord.email,
+        password,
+      });
+
+      if (error || !data.user) {
+        Alert.alert('Login Failed', 'Invalid username or password.');
+        return;
+      }
+
+      // Store user in context
+      login({
+        id: userRecord.id,
+        username: userRecord.username,
+        email: userRecord.email,
+      });
+
+      router.replace('/(tabs)');
+    } catch (err) {
+      console.error('Login error:', err);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
     }
-
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('id, username, email')
-      .eq('id', data.user.id)
-      .single();
-
-    if (profileError || !profile) {
-      Alert.alert('Error', 'Could not load user profile.');
-      return;
-    }
-
-    login(profile);
-    router.replace('/(tabs)');
   };
 
   return (
@@ -64,11 +77,11 @@ export default function LoginScreen() {
       <Text style={styles.subtitle}>Login to continue</Text>
 
       <TextInput
-        placeholder="Email"
+        placeholder="Username"
         placeholderTextColor="#999"
         autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
+        value={username}
+        onChangeText={setUsername}
         style={styles.input}
       />
 
