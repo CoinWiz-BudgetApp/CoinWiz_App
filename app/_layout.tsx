@@ -22,7 +22,7 @@ export default function RootLayout() {
           <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)"          options={{ headerShown: false }} />
           <Stack.Screen name="add-expense"     options={{ headerShown: false }} />
-          <Stack.Screen name="link-bank"       options={{ title: '', headerStyle: { backgroundColor: '#c774f7' }, headerTintColor: 'rgb(250, 250, 250)' }} />
+          <Stack.Screen name="link-bank"       options={{ title: '', headerStyle: { backgroundColor: '#9352be' }, headerTintColor: 'rgb(250, 250, 250)' }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
