@@ -1,3 +1,4 @@
+import { getPlaidTransactions } from '@/lib/plaid';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -6,8 +7,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { useAuth } from '../../context/_AuthContext';
 import { supabase } from '../../database/db';
@@ -34,8 +36,10 @@ export default function HomeScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [totalExpenses, setTotalExpenses] = useState(0);
 
-  // Mock balance for now — replace with real budget data later
-  const balance = 2000;
+  const [balance, setBalance] = useState(0);
+  const [editingBalance, setEditingBalance] = useState(false);
+  const [balanceInput, setBalanceInput] = useState('');
+
   const remaining = balance - totalExpenses;
 
   useFocusEffect(
@@ -43,34 +47,62 @@ export default function HomeScreen() {
       const load = async () => {
         if (!user) return;
 
-        // Get recent expense
-        const { data: expenseData, error: expenseError } = await supabase
+        // Get user balance
+        const { data: userData } = await supabase
+          .from('users')
+          .select('monthly_balance')
+          .eq('id', user.id)
+          .single();
+
+        if (userData && userData.monthly_balance != null) {
+          setBalance(Number(userData.monthly_balance));
+          console.log('USER DATA:', userData);
+        }
+
+        // Get stored bank account
+        const { data: bank } = await supabase
+          .from('bank_accounts')
+          .select('access_token')
+          .eq('user_id', user.id)
+          .single();
+
+        if (bank?.access_token) {
+          try {
+            const txRes = await getPlaidTransactions(bank.access_token);
+
+            if (txRes.transactions.length > 0) {
+              const formatted = txRes.transactions.map((t: any) => ({
+                user_id: user.id,
+                title: t.name,
+                amount: t.amount,
+                category: t.category?.[0] || 'Other',
+                date: t.date,
+              }));
+
+              await supabase.from('expenses').insert(formatted);
+            }
+          } catch (err) {
+            console.error('Plaid refresh error:', err);
+          }
+        }
+
+        // Get all expenses (manual + plaid)
+        const { data: expenseData, error } = await supabase
           .from('expenses')
           .select('*')
           .eq('user_id', user.id)
           .order('date', { ascending: false })
           .limit(5);
 
-        if (expenseError) {
-          console.error(expenseError);
+        if (error) {
+          console.error(error);
           return;
         }
 
         setExpenses(expenseData ?? []);
 
-        // Get total expenses
-        const { data: totalData, error: totalError } = await supabase
-          .from('expenses')
-          .select('amount')
-          .eq('user_id', user.id);
-
-        if (totalError) {
-          console.error(totalError);
-          return;
-        }
-
         const total =
-          totalData?.reduce((sum, e) => sum + Number(e.amount), 0) ?? 0;
+          expenseData?.reduce((sum, e) => sum + Number(e.amount), 0) ?? 0;
 
         setTotalExpenses(total);
       };
@@ -78,6 +110,20 @@ export default function HomeScreen() {
       load();
     }, [user])
   );
+
+  const saveBalance = async () => {
+    const val = parseFloat(balanceInput);
+    if (isNaN(val)) return;
+
+    await supabase
+      .from('users')
+      .update({ monthly_balance: val })
+      .eq('id', user!.id);
+
+    setBalance(val);
+    setEditingBalance(false);
+    setBalanceInput('');
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -93,8 +139,35 @@ export default function HomeScreen() {
 
         {/* Balance Card */}
         <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Monthly Balance</Text>
-          <Text style={styles.balanceAmount}>${balance.toFixed(2)}</Text>
+          <Text style={styles.balanceLabel}>Monthly Budget</Text>
+
+          {editingBalance ? (
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TextInput
+                value={balanceInput}
+                onChangeText={setBalanceInput}
+                keyboardType="decimal-pad"
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 8,
+                  padding: 8,
+                  flex: 1,
+                }}
+                placeholder="Enter amount"
+              />
+              <TouchableOpacity onPress={saveBalance}>
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity onPress={() => {
+              setEditingBalance(true);
+              setBalanceInput(String(balance));
+            }}>
+              <Text style={styles.balanceAmount}>${balance.toFixed(2)}</Text>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.balanceRow}>
             <View style={styles.balanceStat}>
               <Text style={styles.statLabel}>Expenses</Text>
@@ -114,7 +187,7 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
           <TouchableOpacity
-            style={styles.actionCard}
+            style={styles.actionCard} 
             onPress={() => router.push('/add-expense')}
           >
             <Ionicons name="card" size={28} color="#A855C1" />
