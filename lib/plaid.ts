@@ -46,3 +46,9 @@ export async function exchangePlaidPublicToken(publicToken: string) {
     publicToken,
   });
 }
+
+export async function getPlaidTransactions(accessToken: string) {
+  return postJson<{ transactions: any[] }>('/plaid/transactions', {
+    accessToken,
+  });
+}
