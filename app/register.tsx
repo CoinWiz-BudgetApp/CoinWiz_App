@@ -19,7 +19,11 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const register = async () => {
-    if (!username || !email || !password || !confirmPassword) {
+    const cleanUsername = username.trim();
+    const cleanEmail = email.trim();
+
+    // Validation
+    if (!cleanUsername || !cleanEmail || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
@@ -32,34 +36,60 @@ export default function RegisterScreen() {
       return;
     }
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      // Check if username already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', cleanUsername)
+        .maybeSingle();
 
-    if (authError || !authData.user) {
-      Alert.alert('Error', authError?.message || 'Registration failed.');
-      return;
-    }
+      if (existingUser) {
+        Alert.alert('Error', 'Username already exists.');
+        return;
+      }
 
-    const { error: dbError } = await supabase
-      .from('users')
-      .insert([
+      // Create auth user
+      const { data: authData, error: authError } =
+        await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+        });
+
+      if (authError || !authData.user) {
+        Alert.alert('Error', authError?.message || 'Registration failed.');
+        return;
+      }
+
+      const userId = authData.user.id;
+
+      // Insert into users table
+      const { error: dbError } = await supabase.from('users').insert([
         {
-          id: authData.user.id,
-          username,
-          email,
+          id: userId,
+          username: cleanUsername,
+          email: cleanEmail,
           recovery_pin: pin || null,
         },
       ]);
 
-    if (dbError) {
-      Alert.alert('Error', 'Username already exists. Please choose another.');
-      return;
-    }
+      if (dbError) {
+        // Rollback auth user if DB fails
+        await supabase.auth.admin.deleteUser(userId);
 
-    Alert.alert('Success', 'Account created! Please log in.');
-    router.replace('/login');
+        Alert.alert(
+          'Error',
+          dbError.message || 'Failed to save user. Try again.'
+        );
+        return;
+      }
+
+      Alert.alert('Success', 'Account created! Please log in.');
+      router.replace('/login');
+    } catch (err) {
+      console.error('Register error:', err);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
   };
 
   return (
