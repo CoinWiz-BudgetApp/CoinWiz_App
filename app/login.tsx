@@ -34,7 +34,7 @@ export default function LoginScreen() {
         return;
       }
 
-      // Login using email
+      // Log in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: userRecord.email,
         password,
@@ -42,6 +42,12 @@ export default function LoginScreen() {
 
       if (error || !data.user) {
         Alert.alert('Login Failed', 'Invalid username or password.');
+        return;
+      }
+      
+      // Ensure IDs match
+      if (data.user.id !== userRecord.id) {
+        Alert.alert('Error', 'User data mismatch. Contact support.');
         return;
       }
 
