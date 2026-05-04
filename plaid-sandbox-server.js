@@ -79,12 +79,6 @@ const server = http.createServer(async (req, res) => {
 
       const accessToken = response.data.access_token;
 
-      // Simulate transactions for sandbox
-      await plaidClient.sandboxItemFireWebhook({
-        access_token: accessToken,
-        webhook_code: 'DEFAULT_UPDATE',
-      });
-
       return writeJson(res, 200, {
         access_token: accessToken,
         item_id: response.data.item_id,
