@@ -1,8 +1,9 @@
-import { createPlaidLinkToken, exchangePlaidPublicToken } from '@/lib/plaid';
+import { createPlaidLinkToken, exchangePlaidPublicToken, getPlaidTransactions } from '@/lib/plaid';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { create, LinkExit, LinkSuccess, open } from 'react-native-plaid-link-sdk';
 import { useAuth } from '../context/_AuthContext';
+import { supabase } from '../database/db';
 
 const PURP = '#af63ffff';
 
@@ -30,10 +31,34 @@ export default function LinkBankScreen() {
   const handleSuccess = async (success: LinkSuccess) => {
     try {
       setLinking(true);
-      await exchangePlaidPublicToken(success.publicToken);
+
+      const exchange = await exchangePlaidPublicToken(success.publicToken);
+
+      if (user) {
+        await supabase.from('bank_accounts').insert({
+          user_id: user.id,
+          access_token: exchange.access_token,
+          item_id: exchange.item_id,
+        });
+      }
 
       const institutionName = success.metadata?.institution?.name ?? 'Bank account';
       setLinkedBankName(institutionName);
+
+      const txRes = await getPlaidTransactions(exchange.access_token);
+
+      if (user && txRes.transactions.length > 0) {
+        const formatted = txRes.transactions.map((t: any) => ({
+          user_id: user.id,
+          title: t.name,
+          amount: t.amount,
+          category: t.category?.[0] || 'Other',
+          date: t.date,
+        }));
+
+        await supabase.from('expenses').insert(formatted);
+      }
+
       setLinkToken(null);
       Alert.alert('Bank linked', `${institutionName} was linked successfully.`);
     } catch (error) {
