@@ -1,5 +1,5 @@
 # Overview
-CoinWiz is a mobile expense-tracking application built with React Native (Expo). It allows users to create accounts, log expenses, set budgets, and view financial reports. The app uses Supabase as its backend for authentication and PostgreSQL database storage, while a Node.js server handles secure integrations such as Plaid. The architecture separates client-side UI, backend services, and database storage to ensure scalability and security.
+CoinWiz is a mobile expense-tracking application built with React Native (Expo). It allows users to create accounts, log expenses, set budgets, and view financial reports. The app uses Node as its backend for authentication and Supabase database storage. The architecture separates client-side UI, backend services, and database storage to ensure scalability and security.
 
 # Tech Stack
 - Frontend: React Native (Expo)
@@ -27,11 +27,12 @@ CoinWiz is a mobile expense-tracking application built with React Native (Expo).
 - cd CoinWiz
 2. Install dependencies
 - npm install
-3. Start iOS or Android emulator
-4. Run the app
-- npm start
-5. Press 'i' for iOS simulator, or 'a' for Android emulator
-6. (Smartphone) - Scan QR code with Expo Go | (Desktop) - CoinWiz should start running on emulator
+3. Start Plaid Sandbox-Server
+- npm run plaid:sandbox-server
+4. Run Prebuild
+- npx expo prebuild
+5. Run app on iOS or Android
+- npx expo run:android (or ios)
 
 # Notes
 - Supabase handles authentication and database acces via API
