@@ -1,8 +1,4 @@
-
 require('dotenv').config();
-console.log('CWD:', process.cwd());
-console.log('ENV PATH TEST:', process.env.PLAID_CLIENT_ID);
-
 const http = require('http');
 const { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } = require('plaid');
 
@@ -11,7 +7,7 @@ const PLAID_SECRET = process.env.PLAID_SECRET;
 const PORT = Number(process.env.PORT || 3000);
 
 if (!PLAID_CLIENT_ID || !PLAID_SECRET) {
-  console.error('Missing PLAID_CLIENT_ID or PLAID_SECRET in environment.');
+  console.error('Missing PLAID_CLIENT_ID or PLAID_SECRET.');
   process.exit(1);
 }
 
@@ -40,9 +36,7 @@ function writeJson(res, statusCode, body) {
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
+    req.on('data', chunk => (data += chunk));
     req.on('end', () => {
       if (!data) return resolve({});
       try {
@@ -56,13 +50,8 @@ function parseBody(req) {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (req.method === 'OPTIONS') {
-    return writeJson(res, 204, {});
-  }
-
-  if (req.method !== 'POST') {
-    return writeJson(res, 404, { error: 'Not found' });
-  }
+  if (req.method === 'OPTIONS') return writeJson(res, 204, {});
+  if (req.method !== 'POST') return writeJson(res, 404, { error: 'Not found' });
 
   try {
     if (req.url === '/plaid/create-link-token') {
@@ -83,26 +72,53 @@ const server = http.createServer(async (req, res) => {
     if (req.url === '/plaid/exchange-public-token') {
       const body = await parseBody(req);
       const publicToken = String(body.publicToken || '');
-      if (!publicToken) {
-        return writeJson(res, 400, { error: 'publicToken is required' });
-      }
 
-      const response = await plaidClient.itemPublicTokenExchange({ public_token: publicToken });
+      const response = await plaidClient.itemPublicTokenExchange({
+        public_token: publicToken,
+      });
+
+      const accessToken = response.data.access_token;
+
+      // Simulate transactions for sandbox
+      await plaidClient.sandboxItemFireWebhook({
+        access_token: accessToken,
+        webhook_code: 'DEFAULT_UPDATE',
+      });
+
       return writeJson(res, 200, {
-        access_token: response.data.access_token,
+        access_token: accessToken,
         item_id: response.data.item_id,
       });
     }
 
+    // Fetch transactions
+    if (req.url === '/plaid/transactions') {
+      const body = await parseBody(req);
+      const accessToken = String(body.accessToken || '');
+
+      const today = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+
+      const response = await plaidClient.transactionsGet({
+        access_token: accessToken,
+        start_date: thirtyDaysAgo.toISOString().split('T')[0],
+        end_date: today.toISOString().split('T')[0],
+      });
+
+      return writeJson(res, 200, {
+        transactions: response.data.transactions,
+      });
+    }
+
     return writeJson(res, 404, { error: 'Not found' });
-  } catch (error) {
-    const plaidError = error && error.response && error.response.data ? error.response.data : null;
+  } catch (err) {
     return writeJson(res, 500, {
-      error: plaidError || (error instanceof Error ? error.message : 'Server error'),
+      error: err?.response?.data || err.message || 'Server error',
     });
   }
 });
 
 server.listen(PORT, () => {
-  console.log(`Plaid sandbox server listening on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
