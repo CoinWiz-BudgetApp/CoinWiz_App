@@ -23,7 +23,7 @@ CoinWiz is a mobile expense-tracking application built with React Native (Expo).
 
 # Setup Instructions (in VS Code's terminal)
 1. Clone the repository
-- git clone https://github.com/JackBrunswik/Complex-Algorithm-Simulator.git
+- git clone https://github.com/CoinWiz-BudgetApp/CoinWiz_App.git
 - cd CoinWiz
 2. Install dependencies
 - npm install
